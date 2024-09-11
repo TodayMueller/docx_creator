@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "plexiform-timer-432219-i0",
+  "private_key_id": "99dd8c72cc89a2363dc9ca1fbd4b3ad9e5d707d5",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCwNirvWu2ok/In\n/vXz9R1EQCU7Y+g4C88RgazQuCO0ifD9Xtgps22Uy+zB+SKtcI9RxG/iKkcZR6cL\nFRKl5ExpLxK53wHD/M4Z+TcRatR0wWRTEItphrmtozzxeTS5NrAKTLdx5w8zKHsp\n+FIiEdVnYBbVIf+MF4l2aaQos6vhJL6YIVms/YUYNKwsyyHWMDzpBGGx9USJmVtC\nkUU/EQgHAbPRRCRhtzjodoTOqwzBHZOMp1U9gX1K7Aq7h1iCRxNOKyaUDwg9dZxl\nAEul6UZyqYcYxfuWNEF1DuIEyhwjlxXXydAFb1WVfuYdRr8k6n3zb/kBVoy1uETY\nBoR99XdxAgMBAAECggEANWMz/vD9sGWiqJuGyTMqetM0dJoAcXqichtn0JT5vGlO\nqnVh6MCEIuDmCp8A8qt3wL5TZ6KHiBE9ew4XaEuTGws4ETiPwGGH0DbBiHVliTpO\nuxv4ITDAcOtUO5UNdFAtZfF4YvoukMFjD4Q83jWpAnkKceirFDbNXyMCqZJGMR//\nCh4OdSMNqP7bNU2thFAo7uw0UJBkYagcUf6NQvT6fQRtRzZjmHgf14zaNw+qHK/P\nKzrepDwp3DSUq/5DTTpSHpcnaxP5+AOO+VF27i1ufZo3yz7Ks2g3Vu3Kw0SNzkEk\ndk2wMf8lR7DCGgJjZtoj67+8jR0DuprmPLD4fbyVQQKBgQDye1BsVGkUDF7VP4qK\nFwAWF0vS/Mc8dC+53sBfGnF5mwUB4WZoyJFlZe5ehXPVLeOnnisByQXkVI2NZFYB\nDtIRbMMvnDDF0G/kuv1UDxr+PbjqVFZQSZYXokn+DZQEyDxPcoSErI5LLT2QrLU4\n5Y+hdQoBZD4uyQRmwamUyMciCwKBgQC6CQzYeFQLZgbhmZeb2Mwjh834KUH6PHId\nPLAb9syPOKLUB795ztZMmoDoJMg4coFZiHOI5PmpkEcrBn9TlvgBw/55uWxTL8mZ\nLJWh/D3s4u6vrNW0JCX3gDBX4mKikC1bcZ69A7EWsjvYFfOLFEXjOah9iIyzb0yB\n/HwEw/fV8wKBgCpuQahzLOABOib+s3NuiulSskX9Ta/adO+FdwwtSGYLJlkp5A25\n6xdfOtL3b0mCei++kbACSTGnSg3P3Ozadw/thEo0fqRe0PWpcuLesc6DZnQ6xc/O\n0KDaGTCHl7sufr84PtAokc294OQMFLocEYIjRNjxfaAaNNb2VIJgj9f5AoGAQ1lv\naxb05kODjjz6pBMypFJQAN1+40bq0SbdYuJQYDFS0YwUh9aXwpfUvzZBvh3GMlGx\n8gdjUz3GZg8uHWb0Vj9Ma2jzjJIqW+fGLCSTjqUBYFwj6dmEXTvtRIPSzaOAqDBU\nFX22qM7R14Lq7pjiTEbddsTumy9Z9V0g0ODZYn0CgYBN0AX17fsJ0Qmkvs2z7EFO\nhnfY8ArDtonIOQWQP6m24IN5zKxeJFfn0a16GtWlWgBSvK8YF/h4KDRj5Xlytzeq\nLzYbtanRzeh7rtQKzT0/zn7cf4jiaKpsiWA79iODkd/pVS05nIT7qnAONUvzQEKS\nwffL3oGaGl0jXmRf2xnlAw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "service-account@plexiform-timer-432219-i0.iam.gserviceaccount.com",
+  "client_id": "112182915015218464107",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/service-account%40plexiform-timer-432219-i0.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
