@@ -1,9 +1,10 @@
-import docx
 from docx.shared import Pt, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+import docx
+import os
 
 # Загрузка данных из Google Sheets
 def load_google_sheet(s_id, s_range):
@@ -39,6 +40,15 @@ def convert_to_initials(full_name):
     else:
         return full_name
 
+def format_date(date_str):
+    months = {
+        '01': 'января', '02': 'февраля', '03': 'марта', '04': 'апреля',
+        '05': 'мая', '06': 'июня', '07': 'июля', '08': 'августа',
+        '09': 'сентября', '10': 'октября', '11': 'ноября', '12': 'декабря'
+    }
+    date = datetime.strptime(date_str, "%Y-%m-%d")
+    return f"{date.day} {months[date.strftime('%m')]} {date.year}г."
+
 def generate_conference_program(tech_data):
     doc = docx.Document()
     set_document_style(doc)
@@ -71,10 +81,9 @@ def generate_conference_program(tech_data):
 
     for date, session_id in sessions.items():
         session_heading = doc.add_paragraph(f'Заседание {str(session_id)}', style='Normal')
-        session_heading.runs[0].bold = True
         
         session_info = doc.add_paragraph()
-        session_info.add_run(f"{date}")
+        session_info.add_run(f"{format_date(date)}")
 
         participant_num = 1
         for row in tech_data:
@@ -84,8 +93,7 @@ def generate_conference_program(tech_data):
                 doc.add_paragraph(f'{row[13]}', style='Normal') 
                 participant_num += 1
 
-    doc.save('(1) Программа конференции.docx')
-
+    doc.save('report/(1) Программа конференции.docx')
 
 def generate_conference_report(tech_data):
     doc = docx.Document()
@@ -117,10 +125,9 @@ def generate_conference_report(tech_data):
 
     for date, session_id in sessions.items():
         session_heading = doc.add_paragraph(f'Заседание {str(session_id)}', style='Normal')
-        session_heading.runs[0].bold = True
         
         session_info = doc.add_paragraph()
-        session_info.add_run(f"{date}")
+        session_info.add_run(f"{format_date(date)}")
 
         doc.add_paragraph(
             f"Список докладов",
@@ -139,15 +146,27 @@ def generate_conference_report(tech_data):
         for cell in hdr_cells:
             for paragraph in cell.paragraphs:
                 paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                paragraph.paragraph_format.first_line_indent = Cm(0) 
+                paragraph.paragraph_format.first_line_indent = Cm(0)
 
         # Заполнение таблицы
         participant_num = 1
         for row in tech_data:
             if sessions[row[15]] == session_id:
-                initials = row[7] + " " + row[8] + " " + row[9] 
-                status = f"{row[12]} Гр. № {row[11]}" if row[11] else row[12] 
-                recommendation = "опубликовать доклад в сборнике МСНК" if len(row) > 17 and row[17] == "1" else "доклад плохо подготовлен"
+                initials = row[7] + " " + row[8] + " " + row[9]
+                status = f"{row[12]} Гр. № {row[11]}" if row[11] else row[12]
+                
+                # Решение с учётом трёх вариантов
+                if len(row) > 16:
+                    if row[16] == "1":
+                        recommendation = "опубликовать доклад в сборнике МСНК"
+                    elif row[16] == "2":
+                        recommendation = ("опубликовать доклад в сборнике МСНК; "
+                                          "рекомендовать к участию в финале конкурса "
+                                          "на лучшую студенческую научную работу ГУАП")
+                    elif row[16] == "0":
+                        recommendation = "доклад плохо подготовлен"
+                else:
+                    recommendation = "нет данных"
 
                 row_cells = table.add_row().cells
                 row_cells[0].text = str(participant_num)
@@ -155,10 +174,9 @@ def generate_conference_report(tech_data):
                 row_cells[2].text = status 
                 row_cells[3].text = recommendation
 
-                 
                 for paragraph in row_cells[1].paragraphs + row_cells[2].paragraphs + row_cells[3].paragraphs:
                     paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                    paragraph.paragraph_format.first_line_indent = Cm(0)   
+                    paragraph.paragraph_format.first_line_indent = Cm(0)
 
                 participant_num += 1
 
@@ -166,8 +184,7 @@ def generate_conference_report(tech_data):
 
     doc.add_paragraph("Подпись научного руководителя секции", style='Normal')
 
-    doc.save('(1) Отчёт о конференции.docx')
-
+    doc.save('report/(1) Отчёт о конференции.docx')
 
 def generate_conference_list(tech_data):
     doc = docx.Document()
@@ -181,12 +198,9 @@ def generate_conference_list(tech_data):
     first_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     doc.add_paragraph(f"Кафедра 43. Компьютерных технологий и программной инженерии")
-    """
-    doc.add_paragraph(f"e-mail: {tech_data[0][4]}")
-    doc.add_paragraph(f"тел.: {tech_data[0][5]}")
-    """
+    
     for row in tech_data:
-        if len(row) > 17 and row[17] == "1":
+        if len(row) > 16 and row[16] == "1" or row[16] == "2":
             combined_paragraph = doc.add_paragraph()
             
             name_run = combined_paragraph.add_run(convert_to_initials(row[7] + " " + row[8] + " " + row[9]))
@@ -198,10 +212,12 @@ def generate_conference_list(tech_data):
     doc.add_paragraph("\n" * 2)
     doc.add_paragraph(f"Руководитель УНИДС {' ' * 40}")
 
-
-    doc.save('(1) Список представляемых к публикации докладов.docx')
+    doc.save('report/(1) Список представляемых к публикации докладов.docx')
 
 if __name__ == "__main__":
+    if not os.path.exists('report'):
+        os.makedirs('report')
+
     sheet_id = '1uuvM1XjOtNce025VH5z1PO1Yn02uNpZqu2jII1oRXZo'
     tech_range = 'Sheet1!A2:S'  # Диапазон данных
 
