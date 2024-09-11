@@ -27,7 +27,6 @@ def set_document_style(doc):
     doc.sections[0].top_margin = Cm(2)
     doc.sections[0].bottom_margin = Cm(2)
 
-# Функция для конвертации полного ФИО в формат "Фамилия И.О."
 def convert_to_initials(full_name):
     parts = full_name.split()
     if len(parts) == 3:
@@ -39,12 +38,10 @@ def convert_to_initials(full_name):
     else:
         return full_name
 
-# Генерация программы конференции с форматированием
 def generate_conference_program(student_data, tech_data):
     doc = docx.Document()
     set_document_style(doc)
 
-    # Первая строка (жирный шрифт)
     first_paragraph = doc.add_paragraph(
         'Форма представления материалов для программы 78 МСНК ГУАП',
         style='Normal'
@@ -83,7 +80,6 @@ def generate_conference_program(student_data, tech_data):
         style='Normal'
     )
     
-    # Преобразуем значения в столбце 8 в числа и находим максимальное
     max_value = max([int(row[8]) for row in student_data if row[8].isdigit()])
     
     for cur_num in range(1, max_value + 1):
@@ -92,11 +88,10 @@ def generate_conference_program(student_data, tech_data):
         session_heading = doc.add_paragraph(f'Заседание {str(cur_num)}', style='Normal')
         session_heading.runs[0].bold = True
         
-        # Дата и время + адрес (в одной строке)
+        # Дата и время + адрес
         session_info = doc.add_paragraph()
         session_info.add_run(f"{tech_data[cur_num - 1][11]}{' ' * 35}Санкт-Петербург, ул. Большая Морская, д. 67,")
 
-        # Лит. А, ауд. у правого края (в новой строке)
         room_info = doc.add_paragraph()
         run = room_info.add_run(f"{' ' * 75} лит. А, ауд. {tech_data[cur_num - 1][12]}")
 
@@ -104,9 +99,9 @@ def generate_conference_program(student_data, tech_data):
         participant_num = 1
         for row in student_data:
             if int(row[8]) == cur_num:
-                initials = convert_to_initials(row[1])  # Фамилия с инициалами
+                initials = convert_to_initials(row[1]) 
                 doc.add_paragraph(f'{participant_num}. {initials}', style='Normal')
-                doc.add_paragraph(f'{row[2]}', style='Normal')  # Тема
+                doc.add_paragraph(f'{row[2]}', style='Normal')
                 participant_num += 1
                 
     doc.save('Программа конференции.docx')
@@ -115,7 +110,6 @@ def generate_conference_report(student_data, tech_data):
     doc = docx.Document()
     set_document_style(doc)
 
-    # Первая строка (жирный шрифт)
     first_paragraph = doc.add_paragraph(
         'Отчёт о конференции 78 МСНК ГУАП',
         style='Normal'
@@ -132,20 +126,16 @@ def generate_conference_report(student_data, tech_data):
     run2.bold = True
     run2.italic = True
 
-    # Преобразуем значения в столбце 8 в числа и находим максимальное
     max_value = max([int(row[8]) for row in student_data if row[8].isdigit()])
     
     for cur_num in range(1, max_value + 1):
         
-        # Заседание
         session_heading = doc.add_paragraph(f'Заседание {str(cur_num)}', style='Normal')
         session_heading.runs[0].bold = True
         
-        # Дата и время + адрес (в одной строке)
         session_info = doc.add_paragraph()
         session_info.add_run(f"{tech_data[cur_num - 1][11]}{' ' * 35}Санкт-Петербург, ул. Большая Морская, д. 67,")
 
-        # Лит. А, ауд. у правого края (в новой строке)
         room_info = doc.add_paragraph()
         run = room_info.add_run(f"{' ' * 75} лит. А, ауд. {tech_data[cur_num - 1][12]}")
 
@@ -173,33 +163,30 @@ def generate_conference_report(student_data, tech_data):
         for cell in hdr_cells:
             for paragraph in cell.paragraphs:
                 paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                paragraph.paragraph_format.first_line_indent = Cm(0)  # Убираем красную строку
+                paragraph.paragraph_format.first_line_indent = Cm(0)
 
         # Заполнение таблицы
         participant_num = 1
         for row in student_data:
             if int(row[8]) == cur_num:
-                initials = row[1]  # Фамилия с инициалами
+                initials = row[1]
                 status = f"{row[4]} Гр. № {row[5]}"
                 recommendation = "опубликовать доклад в сборнике МСНК" if row[9] == "1" else "доклад плохо подготовлен"
 
                 row_cells = table.add_row().cells
                 row_cells[0].text = str(participant_num)
-                row_cells[1].text = f"{initials}\n{row[2]}"  # ФИО и название доклада
-                row_cells[2].text = status  # Статус
-                row_cells[3].text = recommendation  # Рекомендация
+                row_cells[1].text = f"{initials}\n{row[2]}" 
+                row_cells[2].text = status 
+                row_cells[3].text = recommendation  
 
-                # Выравнивание текста в ячейках по левому краю
                 for paragraph in row_cells[1].paragraphs + row_cells[2].paragraphs + row_cells[3].paragraphs:
                     paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                    paragraph.paragraph_format.first_line_indent = Cm(0)  # Убираем красную строку
+                    paragraph.paragraph_format.first_line_indent = Cm(0)
 
                 participant_num += 1
 
-        # Добавление пустой строки после таблицы
         doc.add_paragraph()
 
-    # Добавление строки "Подпись научного руководителя секции"
     doc.add_paragraph("Подпись научного руководителя секции", style='Normal')
 
     doc.save('Отчёт о конференции.docx')
@@ -209,7 +196,6 @@ def generate_conference_list(student_data, tech_data):
     doc = docx.Document()
     set_document_style(doc)
 
-    # Первая строка (жирный шрифт)
     first_paragraph = doc.add_paragraph(
         'Список представляемых к публикации докладов',
         style='Normal'
@@ -223,31 +209,26 @@ def generate_conference_list(student_data, tech_data):
     doc.add_paragraph(f"e-mail: {tech_data[0][4]}")
     doc.add_paragraph(f"тел.: {tech_data[0][5]}")
 
-    # Добавление списка студентов с оценкой "1" в столбце J
+    # Пополнение списка студентов
     for row in student_data:
-        if row[9] == "1":  # Если в столбце J (9-й столбец) стоит "1"
-            # Создание абзаца для фамилии с инициалами и темы
+        if row[9] == "1":
             combined_paragraph = doc.add_paragraph()
             
-            # Добавляем фамилию с инициалами курсивом
             name_run = combined_paragraph.add_run(f"{convert_to_initials(row[1])} ")
             name_run.italic = True
             
-            # Добавляем тему обычным текстом в ту же строку
             combined_paragraph.add_run(f"{row[2]}")
 
-    # Добавление строки "Руководитель УНИДС"
-    doc.add_paragraph("\n" * 2)  # Добавление двух пустых строк перед подписью
+    doc.add_paragraph("\n" * 2)
     doc.add_paragraph(f"Руководитель УНИДС {' ' * 40}{convert_to_initials(tech_data[0][2])}")
 
 
     doc.save('Список представляемых к публикации докладов.docx')
 
-# Пример использования
 if __name__ == "__main__":
     student_sheet_id = '1szrnHnYN1LOLG9V8eJeye3YTZY4Ka_FPPZfWjQ5_zlw'
     tech_sheet_id = '1MROr3Pw7nMG2vYW_AeqIy2q9FTF7URD3b24tyrBYWgE'
-    student_range = 'Sheet1!A2:L'  # Диапазон данных в Google Sheets, включая столбцы для всех заседаний
+    student_range = 'Sheet1!A2:L' 
     tech_range = 'Sheet1!A2:M'
     
     student_data = load_google_sheet(student_sheet_id, student_range)
@@ -275,4 +256,5 @@ if __name__ == "__main__":
             break
         else:
             print("Ошибка: Неправильный формат ввода.")
+
 
