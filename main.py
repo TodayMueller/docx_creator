@@ -1,8 +1,10 @@
 import docx
+import os
 from docx.shared import Pt, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
+from datetime import datetime
 
 # Загрузка данных из Google Sheets
 def load_google_sheet(s_id, s_range):
@@ -37,6 +39,16 @@ def convert_to_initials(full_name):
         return f"{surname} {name[0]}."
     else:
         return full_name
+    
+
+def format_date(date_str):
+    months = {
+        '01': 'января', '02': 'февраля', '03': 'марта', '04': 'апреля',
+        '05': 'мая', '06': 'июня', '07': 'июля', '08': 'августа',
+        '09': 'сентября', '10': 'октября', '11': 'ноября', '12': 'декабря'
+    }
+    date = datetime.strptime(date_str, "%Y-%m-%d")
+    return f"{date.day} {months[date.strftime('%m')]} {date.year}г."
 
 def generate_conference_program(student_data, tech_data):
     doc = docx.Document()
@@ -80,7 +92,7 @@ def generate_conference_program(student_data, tech_data):
         style='Normal'
     )
     
-    max_value = max([int(row[8]) for row in student_data if row[8].isdigit()])
+    max_value = max([int(row[15]) for row in student_data if row[15].isdigit()])
     
     for cur_num in range(1, max_value + 1):
         
@@ -90,21 +102,26 @@ def generate_conference_program(student_data, tech_data):
         
         # Дата и время + адрес
         session_info = doc.add_paragraph()
-        session_info.add_run(f"{tech_data[cur_num - 1][11]}{' ' * 35}Санкт-Петербург, ул. Большая Морская, д. 67,")
+        # Форматируем дату и текст до нужной длины 61 символ
+        formatted_text = f"{format_date(tech_data[cur_num - 1][11])}, {tech_data[cur_num - 1][12]}"
+        formatted_text = formatted_text.ljust(58)  # Дополняем пробелами до 61 символа
+
+        # Добавляем к строке адрес
+        session_info.add_run(f"{formatted_text}Санкт-Петербург, ул. Большая Морская, д. 67,")
 
         room_info = doc.add_paragraph()
-        run = room_info.add_run(f"{' ' * 75} лит. А, ауд. {tech_data[cur_num - 1][12]}")
+        run = room_info.add_run(f"{' ' * 73} лит. А, ауд. {tech_data[cur_num - 1][13]}")
 
         # Список участников с темами
         participant_num = 1
         for row in student_data:
-            if int(row[8]) == cur_num:
-                initials = convert_to_initials(row[1]) 
+            if int(row[15]) == cur_num:
+                initials = convert_to_initials(row[7] + ' ' + row[8] + ' ' + row[9]) 
                 doc.add_paragraph(f'{participant_num}. {initials}', style='Normal')
-                doc.add_paragraph(f'{row[2]}', style='Normal')
+                doc.add_paragraph(f'{row[13]}', style='Normal')
                 participant_num += 1
                 
-    doc.save('Программа конференции.docx')
+    doc.save('report/2 Программа конференции.docx')
 
 def generate_conference_report(student_data, tech_data):
     doc = docx.Document()
@@ -126,7 +143,7 @@ def generate_conference_report(student_data, tech_data):
     run2.bold = True
     run2.italic = True
 
-    max_value = max([int(row[8]) for row in student_data if row[8].isdigit()])
+    max_value = max([int(row[15]) for row in student_data if row[15].isdigit()])
     
     for cur_num in range(1, max_value + 1):
         
@@ -134,10 +151,10 @@ def generate_conference_report(student_data, tech_data):
         session_heading.runs[0].bold = True
         
         session_info = doc.add_paragraph()
-        session_info.add_run(f"{tech_data[cur_num - 1][11]}{' ' * 35}Санкт-Петербург, ул. Большая Морская, д. 67,")
+        session_info.add_run(f"{format_date(tech_data[cur_num - 1][11])}, {tech_data[cur_num - 1][12]}{' ' * 35}Санкт-Петербург, ул. Большая Морская, д. 67,")
 
         room_info = doc.add_paragraph()
-        run = room_info.add_run(f"{' ' * 75} лит. А, ауд. {tech_data[cur_num - 1][12]}")
+        run = room_info.add_run(f"{' ' * 73} лит. А, ауд. {tech_data[cur_num - 1][13]}")
 
         doc.add_paragraph(
             f"Научный руководитель секции - {tech_data[0][3]} {convert_to_initials(tech_data[0][2])}",
@@ -168,14 +185,24 @@ def generate_conference_report(student_data, tech_data):
         # Заполнение таблицы
         participant_num = 1
         for row in student_data:
-            if int(row[8]) == cur_num:
-                initials = row[1]
-                status = f"{row[4]} Гр. № {row[5]}"
-                recommendation = "опубликовать доклад в сборнике МСНК" if row[9] == "1" else "доклад плохо подготовлен"
+            if int(row[15]) == cur_num:
+                initials = row[7] + " " + row[8] + " " + row[9]
+                status = f"{row[12]} Гр. № {row[11]}" if row[11] else row[12]
+                if len(row) > 16:
+                    if row[16] == "1":
+                        recommendation = "опубликовать доклад в сборнике МСНК"
+                    elif row[16] == "2":
+                        recommendation = ("опубликовать доклад в сборнике МСНК; "
+                                          "рекомендовать к участию в финале конкурса "
+                                          "на лучшую студенческую научную работу ГУАП")
+                    elif row[16] == "0":
+                        recommendation = "доклад плохо подготовлен"
+                else:
+                    recommendation = "нет данных"
 
                 row_cells = table.add_row().cells
                 row_cells[0].text = str(participant_num)
-                row_cells[1].text = f"{initials}\n{row[2]}" 
+                row_cells[1].text = f"{initials}\n{row[13]}" 
                 row_cells[2].text = status 
                 row_cells[3].text = recommendation  
 
@@ -189,7 +216,7 @@ def generate_conference_report(student_data, tech_data):
 
     doc.add_paragraph("Подпись научного руководителя секции", style='Normal')
 
-    doc.save('Отчёт о конференции.docx')
+    doc.save('report/2 Отчёт о конференции.docx')
 
 
 def generate_conference_list(student_data, tech_data):
@@ -211,28 +238,31 @@ def generate_conference_list(student_data, tech_data):
 
     # Пополнение списка студентов
     for row in student_data:
-        if row[9] == "1":
+        if len(row) > 16 and row[16] == "1" or row[16] == "2":
             combined_paragraph = doc.add_paragraph()
             
-            name_run = combined_paragraph.add_run(f"{convert_to_initials(row[1])} ")
+            name_run = combined_paragraph.add_run(convert_to_initials(row[7] + " " + row[8] + " " + row[9]))
             name_run.italic = True
             
-            combined_paragraph.add_run(f"{row[2]}")
+            combined_paragraph.add_run(f"{row[13]}")
 
     doc.add_paragraph("\n" * 2)
     doc.add_paragraph(f"Руководитель УНИДС {' ' * 40}{convert_to_initials(tech_data[0][2])}")
 
 
-    doc.save('Список представляемых к публикации докладов.docx')
+    doc.save('report/2 Список представляемых к публикации докладов.docx')
 
 if __name__ == "__main__":
-    student_sheet_id = '1szrnHnYN1LOLG9V8eJeye3YTZY4Ka_FPPZfWjQ5_zlw'
-    tech_sheet_id = '1MROr3Pw7nMG2vYW_AeqIy2q9FTF7URD3b24tyrBYWgE'
-    student_range = 'Sheet1!A2:L' 
-    tech_range = 'Sheet1!A2:M'
+
+    if not os.path.exists('report'):
+        os.makedirs('report')
+
+    sheet_id = '1MROr3Pw7nMG2vYW_AeqIy2q9FTF7URD3b24tyrBYWgE'
+    student_range = 'Sheet1!A2:S' 
+    tech_range = 'Sheet2!A2:N'
     
-    student_data = load_google_sheet(student_sheet_id, student_range)
-    tech_data = load_google_sheet(tech_sheet_id, tech_range)
+    student_data = load_google_sheet(sheet_id, student_range)
+    tech_data = load_google_sheet(sheet_id, tech_range)
     
     # CLI для выбора типа документа
     print("Какой документ хотите составить?")
@@ -256,5 +286,3 @@ if __name__ == "__main__":
             break
         else:
             print("Ошибка: Неправильный формат ввода.")
-
-
